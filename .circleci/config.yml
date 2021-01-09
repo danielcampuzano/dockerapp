@@ -1,17 +1,32 @@
+#Version format of circle CI
 version: 2
+#Every config file must have a build job
 jobs:
   build:
+    #default working directory
     working_directory: /dockerapp
+    #Primary container images from this job under docker
+    #We define the circle environment where our steps will be executed
+    #In circle ci all tests will be running inside containers
+    #And in this container we'll spin up our dockerapp and redis containers and run our tests
+    #It is a container(dockerapp and redis) inside a container (circle ci)
+    #It uses a docker in docker image --> Look in dockerhub
     docker:
+        #We define our outside container, we want container which installs docker and has git
       - image: docker:17.05.0-ce-git
     steps:
+        #We checkout the source code from github to the working directory we have already find
       - checkout
+      #Build docker images for deployment
+      #Creates a separate environment for each build for security
       - setup_remote_docker
+      #Install pip and docker-compose
       - run:
           name: Install dependencies
           command: |
             apk add --no-cache py-pip=9.0.0-r1
             pip install docker-compose==1.15.0
+      #run docker containers and tests inside docker containers
       - run:
           name: Run tests
           command: |
